@@ -63,7 +63,7 @@ SALT = secrets.token_bytes(16)
 KEY = hashlib.pbkdf2_hmac("sha256", MASTER, SALT, 150000, 32)
 NONCE = secrets.token_bytes(12)
 
-# ===================== ANTI-DEBUG + ANTI-VM =====================
+# ===================== ANTI-DEBUG =====================
 ANTI_CHECKS = '''
 import os,sys,time,platform,ctypes
 try:
@@ -133,7 +133,11 @@ def obfuscate(path: str):
     print("[+] Building stub...")
     stub = build_stub(payload, salt, master)
 
-    out = os.path.splitext(os.path.basename(path))[0] + "_shadowcrypted.py"
+    # Save next to original .py
+    folder = os.path.dirname(os.path.abspath(path))
+    filename = os.path.splitext(os.path.basename(path))[0] + "_shadowcrypted.py"
+    out = os.path.join(folder, filename)
+
     with open(out, "w", encoding="utf-8") as f:
         f.write(stub)
 
@@ -142,6 +146,14 @@ def obfuscate(path: str):
     print("    PBKDF2 hardened keys")
     print("    Polymorphic stub")
     print("    Fully working & stable")
+    print(f"[+] Saved at: {out}")
+
+    # Auto-open folder on Windows
+    if os.name == "nt":
+        try:
+            os.system(f'explorer /select,"{out}"')
+        except:
+            pass
 
 # ===================== MAIN =====================
 def main():
